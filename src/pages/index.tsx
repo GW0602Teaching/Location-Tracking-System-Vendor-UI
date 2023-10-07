@@ -19,7 +19,6 @@ export default function Home({ initVendors }: HomeProps) {
         />
         <link rel="icon" href="/public/favicon.ico" sizes="any" />
       </Head>
-      <p>Test</p>
       <Main />
     </>
   );
