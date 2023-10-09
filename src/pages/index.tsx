@@ -8,7 +8,6 @@ interface HomeProps {
 }
 
 export default function Home({ initVendors }: HomeProps) {
-  console.log(initVendors);
   return (
     <>
       <Head>
@@ -19,7 +18,7 @@ export default function Home({ initVendors }: HomeProps) {
         />
         <link rel="icon" href="/public/favicon.ico" sizes="any" />
       </Head>
-      <Main />
+      <Main initVendors={initVendors} />
     </>
   );
 }
