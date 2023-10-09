@@ -3,6 +3,7 @@ import { Status, Wrapper } from '@googlemaps/react-wrapper';
 import React, { useRef, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import mapStyle from './style';
+import { useDeepCompareVendorTweets } from './hooks';
 
 const MapContainer = styled.div`
   height: 100%;
@@ -21,9 +22,9 @@ interface MapProps extends google.maps.MapOptions {
 
 const Map: React.FC<MapProps> = ({
   style,
-  // vendors,
-  // markers,
-  // setMarkers,
+  vendors,
+  markers,
+  setMarkers,
   ...options
 }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -38,6 +39,11 @@ const Map: React.FC<MapProps> = ({
       );
     }
   }, [ref, map, options]);
+
+  useEffect(() => {}, [
+    map,
+    useDeepCompareVendorTweets(vendors.Items),
+  ]);
 
   return <div ref={ref} style={style} />;
 };
