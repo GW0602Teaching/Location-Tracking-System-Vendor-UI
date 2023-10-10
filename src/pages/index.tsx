@@ -1,7 +1,8 @@
-import { Vendors } from '@/api/types';
+import { Vendors, Vendor } from '@/api/types';
 import { getVendors } from '@/api/vendors';
 import Main from '@/components/main';
 import Head from 'next/head';
+import { unmarshall } from '@aws-sdk/util-dynamodb';
 
 interface HomeProps {
   initVendors: Vendors;
@@ -36,6 +37,34 @@ export async function getStaticProps() {
       throw new Error('getVendors unexpected Error');
     }
   }
+
+  vendors.Items = vendors.Items?.map((item, idx) => {
+    const res = unmarshall(item as Vendor);
+    if (idx < 5) {
+      res.tweets = [
+        {
+          date: res.updated + '',
+          geo: {
+            coordinates: {
+              lat: 38.8952123 + idx * 10,
+              long: -77.074949 + idx * 10,
+            },
+            country: 'USA',
+            country_code: 'USA',
+            full_name: 'USA',
+            id: 'USA',
+            name: 'USA',
+            place_type: 'country',
+          },
+          id: '231321',
+          text: 'string',
+          userId: res.twitterId,
+          userName: res.name,
+        },
+      ];
+    }
+    return res as Vendor;
+  });
 
   return {
     props: {
