@@ -3,6 +3,7 @@ import Map from '../map';
 import { useEffect, useState } from 'react';
 import Dashboard from '../dashboard';
 import styled from 'styled-components';
+import { websocket } from '@/api/websocket';
 
 interface MainProps {
   initVendors: Vendors;
@@ -17,6 +18,49 @@ export default function Main({ initVendors }: MainProps) {
   const [markers, setMarkers] = useState<{
     [key: string]: google.maps.Marker;
   }>({});
+
+  const websocketUrl = process.env.NEXT_PUBLIC_VENDORS_WEBSOCKET_URL;
+
+  useEffect(() => {
+    if (websocketUrl) {
+      const ws = websocket(websocketUrl);
+
+      // Event 1: Open a connection
+      const connect = () => {
+        console.log('connected to websocket');
+      };
+      ws.addEventListener('open', connect);
+
+      // Event 2: Consume message
+      const message = (ev: MessageEvent) => {
+        const data: Tweet = JSON.parse(ev.data);
+        console.log(data);
+
+        setVendors((prev) => {
+          const updatedItems = [...prev.Items];
+
+          updatedItems.forEach((vendor) => {
+            if (vendor.twitterId === data.userId) {
+              vendor.tweets.push(data);
+            }
+          });
+
+          return {
+            Items: updatedItems,
+            count: prev.count,
+            lastEvaluatedKey: prev.lastEvaluatedKey,
+          };
+        });
+      };
+      ws.addEventListener('message', message);
+
+      return () => {
+        ws.removeEventListener('open', connect);
+        ws.removeEventListener('message', message);
+        ws.close();
+      };
+    }
+  });
 
   return (
     <MainStyled>
