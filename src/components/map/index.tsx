@@ -30,6 +30,8 @@ const Map: React.FC<MapProps> = ({
   const ref = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map>();
 
+  const reassignedMarkersMap = useRef(false);
+
   console.log('Map', vendors);
 
   useEffect(() => {
@@ -45,6 +47,17 @@ const Map: React.FC<MapProps> = ({
   useEffect(() => {
     if (map) {
       vendors.Items.forEach((vendor) => {
+        if (
+          !reassignedMarkersMap.current &&
+          Object.keys(markers).length
+        ) {
+          console.log('Reassign Marker');
+          Object.values(markers).forEach((marker) => {
+            marker.setMap(map);
+          });
+          reassignedMarkersMap.current = true; // this code block only need to be run once
+        }
+
         if (vendor.tweets.length) {
           const newLat =
             vendor.tweets[vendor.tweets.length - 1].geo.coordinates
