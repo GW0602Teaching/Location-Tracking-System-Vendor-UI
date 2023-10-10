@@ -3,6 +3,9 @@ import { getVendors } from '@/api/vendors';
 import Main from '@/components/main';
 import Head from 'next/head';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
+import type { AttributeValue } from '@aws-sdk/client-dynamodb';
+
+import { random } from 'lodash';
 
 interface HomeProps {
   initVendors: Vendors;
@@ -28,7 +31,7 @@ export async function getStaticProps() {
   let vendors: Vendors | Error;
 
   try {
-    vendors = await getVendors<Vendors>(10);
+    vendors = await getVendors<Vendors>(14);
   } catch (e) {
     if (e instanceof Error) {
       // Return empty vendors
@@ -40,14 +43,14 @@ export async function getStaticProps() {
 
   vendors.Items = vendors.Items?.map((item, idx) => {
     const res = unmarshall(item as Vendor);
-    if (idx < 5) {
+    if (idx % 3 === 0) {
       res.tweets = [
         {
           date: res.updated + '',
           geo: {
             coordinates: {
-              lat: 38.8952123 + idx * 10,
-              long: -77.074949 + idx * 10,
+              lat: 38.8952123 + idx * random(idx / 5),
+              long: -77.074949 + idx * random(idx / 5),
             },
             country: 'USA',
             country_code: 'USA',
@@ -65,6 +68,14 @@ export async function getStaticProps() {
     }
     return res as Vendor;
   });
+  vendors.lastEvaluatedKey = vendors.lastEvaluatedKey
+    ? (unmarshall(
+        vendors.lastEvaluatedKey as unknown as Record<
+          string,
+          AttributeValue
+        >
+      ) as unknown as string)
+    : null;
 
   return {
     props: {
